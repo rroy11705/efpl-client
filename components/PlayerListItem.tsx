@@ -1,9 +1,12 @@
 import React from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native'
 import { useRecoilState, useRecoilValue } from 'recoil'
 
-import { Player } from "../types"
+import { Player, Team } from "../types"
 import { myFormationState, myPlayersState } from '../atoms/MyTeam'
+import { allTeamsState } from '../atoms/Players'
+import { jersey } from "../assets/data/jersey"
+import { singleFixtureState } from '../atoms/Fixture'
 
 interface Props {
     player: Player;
@@ -13,46 +16,71 @@ const PlayerListItem = ({ player } : Props) => {
 
     const [myPlayers, setMyPlayers] = useRecoilState(myPlayersState);
     const myFormation = useRecoilValue(myFormationState);
+    const playerTeam = useRecoilValue(allTeamsState);
+    const fixture = useRecoilValue(singleFixtureState);
 
     const numberOfPlayerInPosition = myPlayers.filter(
         (p) => p.position === player.position
     ).length
 
+    const numberOfPlayerFromPlayerTeam = myPlayers.filter(
+        (p) => p.team === player.team
+    ).length
+
     const addPlayerToMyTeam = () => {
-        setMyPlayers((currentPlayer) => {
+        setMyPlayers((currentPlayers) => {
             if (myPlayers.some((p) => p.id === player.id)) {
-                return currentPlayer.filter((p) => p.id !== player.id)
+                return currentPlayers.filter((p) => p.id !== player.id)
             }
             else {
-                if (numberOfPlayerInPosition < myFormation[player.position]) {
-                    return [...currentPlayer, player];
-                } else {
-                    return currentPlayer;
+                
+                if (myPlayers.length >= 11) {
+                    return currentPlayers;
+                }
+                else {
+                    if (numberOfPlayerFromPlayerTeam >= 7) {
+                        return currentPlayers;
+                    }
+                    if (numberOfPlayerInPosition >= myFormation[player.position]) {
+                        return currentPlayers;
+                    }
+                    return [...currentPlayers, player];
                 }
             }
         });
     }
 
     const isPlayerSelected = myPlayers.some((p) => p.id === player.id);
+    const playerTeamName = playerTeam.find((t : Team) => t.id === player.team).short_name;
+    let team_id : string = player.team.toString()
+    
 
     return (
         <Pressable 
             onPress={addPlayerToMyTeam}
             style={[
                 styles.container,
-                { backgroundColor: isPlayerSelected ? "#d170db" : "#ffffff"}
+                { 
+                    backgroundColor: isPlayerSelected ? "#d170db" : 
+                                    numberOfPlayerFromPlayerTeam < 7 ? "#ffffff" : "#aaaaaa",
+                    opacity: isPlayerSelected ? 1 : numberOfPlayerFromPlayerTeam < 7 ? 1 : 0.5
+                }
             ]}
         >
-            {/* <Image style={styles.image} /> */}
+            <Image 
+                style={styles.image}
+                source={jersey[team_id]}
+            />
 
-            <View style={{ flexGrow: 1 }}>
-                <Text style={styles.name}>{player.name}</Text>
-                <Text>{player.team}</Text>
+            <View style={[styles.colContainer, { flexGrow: 1 }]}>
+                <Text 
+                    numberOfLines={1}
+                    style={styles.name}>{player.name}</Text>
+                <Text>{playerTeamName}</Text>
             </View>
 
             <View style={styles.colContainer}>
-                <Text style={styles.name}>£{(player.price / 1000000).toFixed(1)}m</Text>
-                <Text>{player.position}</Text>
+                <Text style={styles.stats}>£{(player.price / 10).toFixed(1)}m</Text>
             </View>
             <View style={styles.colContainer}>
                 <Text style={styles.points}>{player.totalPoints}</Text>
@@ -72,13 +100,22 @@ const styles = StyleSheet.create({
         borderBottomColor: "#eeeeee"
     },
     colContainer: {
-        marginHorizontal: 15
+        marginHorizontal: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 5
     },
     image: {
-
+        width: 40,
+        height: 55
     },
     name: {
-        fontWeight: "bold"
+        fontWeight: "bold",
+        fontSize: 14,
+        width: 100
+    },
+    stats: {
+        fontWeight: "bold",
+        fontSize: 16
     },
     points: {
 

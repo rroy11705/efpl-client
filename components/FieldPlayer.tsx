@@ -1,24 +1,29 @@
 import * as React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
-import { FontAwesome5 } from '@expo/vector-icons';
+import { StyleSheet, Text, View, Image } from 'react-native';
+import { Player } from "../types";
+import { jersey } from "../assets/data/jersey";
 
 type FieldPlayerProps = {
-    player: null;
+    player: Player;
     position: string;
 }
 
 const FieldPlayer = (props: FieldPlayerProps) => {
 
     const { player, position } = props;
+    let team_id : string = player.team.toString()
 
     return (
         <View
-            style={styles.playerSingle}>
-            <FontAwesome5 name="tshirt" size={32} color={player ? "#d170db" : "#5c5c5cbb"} />
+            style={[styles.playerSingle, {
+                opacity: player.team? 1 : 0.9
+            }]}
+        >
+            <Image style={styles.jerseyImage} source={jersey[team_id]} />
             <Text
+                numberOfLines={1}
                 style={styles.playerSingleText}
-            >{player ? player.name : position}</Text>
+            >{player.id ? player.short_name : position}</Text>
         </View>
     );
 }
@@ -29,13 +34,17 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center"
     },
+    jerseyImage: {
+        transform: [{translateY: 5}, {scaleX: 0.75}, {scaleY: 0.75}]
+    },
     playerSingleText: {
         backgroundColor: "#333333bb",
         color: "#ffffff",
         fontWeight: "bold",
-        fontSize: 12,
+        fontSize: 14,
         padding: 2,
-        paddingHorizontal: 7
+        paddingHorizontal: 7,
+        maxWidth: 80
     }
 })
 

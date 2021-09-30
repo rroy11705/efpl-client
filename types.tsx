@@ -42,10 +42,32 @@ export enum Positions {
 }
 
 export type Player = {
-  id: string;
+  id: number;
   name: string;
+  short_name: string;
   team: number;
   price: number;
   position: Positions;
   totalPoints: number;
 };
+
+export type Team = {
+  id: number;
+  name: string;
+  short_name: string;
+  strength: number;
+}
+
+export type Fixture = {
+  id: number,
+  finished: boolean,
+  kickoff_time: string,
+  matchday: number,
+  minutes: number,
+  started: boolean,
+  stats: [],
+  away_team: number,
+  away_team_score: number,
+  home_team: number,
+  home_team_score: number
+}
